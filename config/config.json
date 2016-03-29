@@ -1,0 +1,15 @@
+{
+ 	"session" : {
+ 		"secret"			: "1&*hYJ6@k0#",
+ 		"saveUninitialized" : false,
+ 		"resave" 			: false
+ 	},
+ 	"redis" : {
+ 		"host": "localhost",
+ 		"port": 6379,
+ 		"ttl" : 260
+ 	},
+ 	"static" : {
+ 		"path" : "/public/css"
+ 	}
+}

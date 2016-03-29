@@ -9,39 +9,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 var session = require('express-session');
 var redis   = require("redis");
 var redisStore = require('connect-redis')(session);
-app.use(session({
-    secret: '1&*hYJ6@k0#',
-    resave: false,
-    saveUninitialized: false,
-    store: new redisStore({ host: 'localhost', port: 6379, client: client,ttl :  260}),
-}));
-app.use('/css', express.static(__dirname + '/public/css'));
 var bodyParser = require('body-parser');
+var client  = redis.createClient();
+var fs = require('fs');
+var configFile = 'config/config.json';
+
+var config = JSON.parse(
+    fs.readFileSync(configFile)
+);
+
+app.use(session({
+    secret            : config.session.secret,
+    resave            : config.session.resave,
+    saveUninitialized : config.session.saveUninitialized,
+    store : new redisStore({ 
+        host   : config.redis.host, 
+        port   : config.redis.port, 
+        client : client,
+        ttl    :  config.redis.ttl
+    })
+}));
+
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-var client  = redis.createClient();
 
-app.get('/', function (req, res) {
-    console.log(req.session);
-    res.render('index', {title: 'Hey', message: 'Hello there'});
-});
+app.use('/css', express.static(__dirname + config.static.path));
+app.use(require('./controllers'));
 
-app.post('/authenticate', function (req, res) {
-    var login    = req.body.login,
-        password = req.body.password;
-    if(login == 'sazon@nxt.ru' && password == '123') {
-        req.session.login = login;
-        req.session.password = password;
-        res.render('index', {title: 'Hey', message: 'Hello there', login: login, password: password});
-    } else {
-        res.render('index', {title: 'Hey', message: 'Not correct'});
-    }
-});
-
-router.get('/hello', function (req, res) { res.send('GET request to the homepage'); });
-
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+app.listen(7777, function () {
+  console.log('Starting Application on Port 7777');
 });
